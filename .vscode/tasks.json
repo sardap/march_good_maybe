@@ -1,0 +1,77 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "make debug",
+            "type": "process",
+            "command": "build-good-maybe.exe",
+            "options": {},
+            "args": [
+                "${workspaceFolder}/build/gfx",
+                "${workspaceFolder}/build.toml",
+                "${workspaceFolder}/assets",
+                "${workspaceFolder}",
+                "build"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "clean",
+            "type": "process",
+            "command": "build-good-maybe.exe",
+            "args": [
+                "clean"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "run",
+            "type": "shell",
+            "isBackground": true,
+            "command": "E:\\emulation\\mGBA\\mGBA.exe",
+            "args": [
+                "${workspaceFolder}/${workspaceFolderBasename}.nds"
+            ],
+            "presentation": {
+                "clear": true,
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "gdb-debug",
+            "type": "shell",
+            "dependsOn": [
+                "make debug"
+            ],
+            "isBackground": false,
+            "command": "E:\\emulation\\mGBA\\mGBA.exe",
+            "args": [
+                "-g",
+                "-1",
+                "${workspaceFolder}/${workspaceFolderBasename}.gba"
+            ],
+            "presentation": {
+                "clear": true,
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "stop-emulation",
+            "type": "shell",
+            "command": "taskkill",
+            "args": [
+                "/FI",
+                "imagename eq mGBA*"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}

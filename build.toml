@@ -1,0 +1,49 @@
+[[Graphics]]
+name="Main Menu Background"
+mode="grit"
+options=[
+    "-fts",				            # Create s file
+    "-gB4",				            # output 4bpp graphics
+    "-gu8",                         # output as bytes
+    "-gT FF00FF",		            # RGB 24 BIT
+    "-pS",				            # Share pallet
+    "-m",                           # Generate map
+    "-OMainMenuBackgroundShared"    # Shared pallet name
+]
+files=[
+    "gfx/MainMenu/background.aseprite",
+]
+
+[[Graphics]]
+name="March Game Background"
+mode="grit"
+options=[
+    "-fts",				            # Create s file
+    "-gS",                          # Shared Tiles
+    "-gB4",				            # output 4bpp graphics
+    "-gu8",                         # output as bytes
+    "-gT FF00FF",		            # RGB 24 BIT
+    "-m",                           # Generate map
+    "-mLs",
+    "-pS",				            # Share pallet
+    "-OMarchGameBackgroundShared"   # Shared pallet name
+]
+files=[
+    "gfx/MarchGame/BackgroundSky.aseprite",
+    "gfx/MarchGame/BackgroundGround.aseprite",
+]
+
+[[Graphics]]
+name="March Game Units"
+mode="grit"
+options=[
+    "-fts",				            # Create s file
+    "-gB4",				            # output 4bpp graphics
+    "-gu8",                         # output as bytes
+    "-gT FF00FF",		            # RGB 24 BIT
+    "-m!",                          # don't Generate map
+]
+files=[
+    "gfx/MarchGame/Units/YellowSquare.psd",
+    "gfx/MarchGame/Units/RedSquare.aseprite",
+]

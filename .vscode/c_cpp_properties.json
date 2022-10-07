@@ -1,0 +1,42 @@
+{
+    "configurations": [
+        {
+            "name": "gba",
+            "forcedInclude": [
+                "${workspaceFolder}\\include\\vscode_fix.h"
+            ],
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}\\build\\**",
+                "${workspaceFolder}\\include\\**",
+                "C:\\devkitPro\\libtonc\\include\\**",
+                "C:\\devkitPro\\libgba\\include\\**",
+                "C:\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "_UNICODE",
+                "WIN32",
+                "ARM7",
+                "ARM9"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "${workspaceFolder}\\build\\**",
+                    "${workspaceFolder}\\include\\**",
+                    "C:\\devkitPro\\libtonc\\include\\**",
+                    "C:\\devkitPro\\libgba\\include\\**",
+                    "C:\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "compilerPath": "C:\\devkitPro\\devkitARM\\bin\\arm-none-eabi-gcc.exe"
+        }
+    ],
+    "version": 4
+}
+// gcc version 11.2.0 (devkitARM release 57)

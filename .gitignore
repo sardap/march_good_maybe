@@ -1,0 +1,6 @@
+build/
+build_good_maybe_cache.json
+march_good_maybe.elf
+march_good_maybe.gba
+template.pnproj
+march_good_maybe.sav
