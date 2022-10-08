@@ -32,6 +32,7 @@ MUSIC		:=
 CPP_VERSION = 20
 OPTIMIZATION_LEVEL = O0
 IGNORE_WARNINGS = -Wno-volatile
+ENTT_HEADER_FILE_DOWNLOAD_LINK = https://raw.githubusercontent.com/skypjack/entt/e5172a9240728cc271af7599c6f13580329f3618/single_include/entt/entt.hpp
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -123,8 +124,15 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 .PHONY: $(BUILD) clean
 
 #---------------------------------------------------------------------------------
+download:
+
+#---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
+ifeq (,$(wildcard ./build/entt/entt.hpp))
+	@mkdir -p build/entt
+	@wget -O build/entt/entt.hpp $(ENTT_HEADER_FILE_DOWNLOAD_LINK)
+endif
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------

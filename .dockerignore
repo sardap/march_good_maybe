@@ -1,0 +1,6 @@
+build/
+march_good_maybe.elf
+march_good_maybe.gba
+march_good_maybe.sav
+template.pnproj
+.vscode/
