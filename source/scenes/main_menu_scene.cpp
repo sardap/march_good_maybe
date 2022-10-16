@@ -50,7 +50,7 @@ static void update() {
 
     MainMenuData& data = std::get<MainMenuData>(g_scene_data);
 
-    if (key_hit(KEY_A)) {
+    if (key_hit(KEY_A) | key_hit(KEY_START)) {
         data.active_option->action();
         return;
     }
