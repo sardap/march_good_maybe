@@ -20,6 +20,7 @@ class Fixed {
         return result;
     }
 
+    explicit operator u32() const { return fx2uint(m_val); }
     explicit operator int() const { return fx2int(m_val); }
     explicit operator long int() const { return fx2int(m_val); }
     explicit operator float() const { return fx2float(m_val); }
@@ -36,8 +37,18 @@ class Fixed {
         return *this;
     }
 
+    Fixed<T>& operator=(const u32 other) noexcept {
+        m_val = int2fx(static_cast<int>(other));
+        return *this;
+    }
+
     Fixed<T> operator+(const Fixed<T>& other) const {
         return raw_initialise(m_val + other.m_val);
+    }
+
+    Fixed<T> operator++(int) noexcept {
+        m_val += int2fx(1);
+        return *this;
     }
 
     Fixed<T>& operator+=(const Fixed<T>& other) noexcept {

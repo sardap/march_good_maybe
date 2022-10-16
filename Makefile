@@ -30,9 +30,16 @@ DATA		:=
 MUSIC		:=
 
 CPP_VERSION = 20
-OPTIMIZATION_LEVEL = O0
+
+ifndef OPTIMIZATION_LEVEL
+	OPTIMIZATION_LEVEL = O0
+endif
+
 IGNORE_WARNINGS = -Wno-volatile
 ENTT_HEADER_FILE_DOWNLOAD_LINK = https://raw.githubusercontent.com/skypjack/entt/e5172a9240728cc271af7599c6f13580329f3618/single_include/entt/entt.hpp
+MGBA_HEADER_FILE_DOWNLOAD_LINK = https://raw.githubusercontent.com/mgba-emu/mgba/686eee4e20cc555b90810811f2d0d6f8b9b393c5/opt/libgba/mgba.h
+MGBA_SOURCE_FILE_DOWNLOAD_LINK = https://raw.githubusercontent.com/mgba-emu/mgba/686eee4e20cc555b90810811f2d0d6f8b9b393c5/opt/libgba/mgba.c
+
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -124,14 +131,19 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 .PHONY: $(BUILD) clean
 
 #---------------------------------------------------------------------------------
-download:
-
-#---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 ifeq (,$(wildcard ./build/entt/entt.hpp))
 	@mkdir -p build/entt
 	@wget -O build/entt/entt.hpp $(ENTT_HEADER_FILE_DOWNLOAD_LINK)
+endif
+ifeq (,$(wildcard ./build/mgba/mgba.h))
+	@mkdir -p build/mgba
+	@wget -O build/mgba/mgba.h $(MGBA_HEADER_FILE_DOWNLOAD_LINK)
+endif
+ifeq (,$(wildcard ./build/mgba/mgba.c))
+	@mkdir -p build/mgba
+	@wget -O build/mgba/mgba.c $(MGBA_SOURCE_FILE_DOWNLOAD_LINK)
 endif
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 

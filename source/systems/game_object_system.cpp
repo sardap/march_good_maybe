@@ -10,7 +10,7 @@ namespace mgm::systems {
 void step_objects(entt::registry& registry) {
     auto view = registry.view<Position, Object>();
 
-    obj_hide_multi(g_oam, OAM_LENGTH);
+    obj_hide_multi(g_oam, g_oam_length);
 
     for (auto entity : view) {
         auto& pos = view.get<Position>(entity);
@@ -27,7 +27,7 @@ void step_objects(entt::registry& registry) {
                     static_cast<int>(pos.y));
     }
 
-    oam_copy(oam_mem, g_oam, OAM_LENGTH);
+    oam_copy(oam_mem, g_oam, g_oam_length);
 }
 
 }  // namespace mgm::systems

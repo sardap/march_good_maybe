@@ -24,7 +24,7 @@ options=[
     "-gu8",                         # output as bytes
     "-gT FF00FF",		            # RGB 24 BIT
     "-m",                           # Generate map
-    "-mLs",
+    "-mLf",
     "-pS",				            # Share pallet
     "-OMarchGameBackgroundShared"   # Shared pallet name
 ]
@@ -42,8 +42,11 @@ options=[
     "-gu8",                         # output as bytes
     "-gT FF00FF",		            # RGB 24 BIT
     "-m!",                          # don't Generate map
+    "-pS",				            # Share pallet
+    "-OMarchGameUnitsShared"   # Shared pallet name
 ]
 files=[
-    "gfx/MarchGame/Units/YellowSquare.psd",
-    "gfx/MarchGame/Units/RedSquare.aseprite",
+    "gfx/MarchGame/Units/FrontLineMan.aseprite",
+    "gfx/MarchGame/Units/RangedMan.aseprite",
+    "gfx/MarchGame/Units/LightFrontLineMan.aseprite",
 ]

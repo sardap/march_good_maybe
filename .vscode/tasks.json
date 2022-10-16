@@ -7,13 +7,20 @@
             "label": "make debug",
             "type": "process",
             "command": "build-good-maybe.exe",
-            "options": {},
+            "options": {
+                "env": {
+                    "OPTIMIZATION_LEVEL": "O0",
+                    "_DEBUG": "1"
+                }
+            },
             "args": [
                 "${workspaceFolder}/build/gfx",
                 "${workspaceFolder}/build.toml",
                 "${workspaceFolder}/assets",
                 "${workspaceFolder}",
-                "build"
+                "build",
+                "-j",
+                "15"
             ],
             "group": {
                 "kind": "build",
@@ -31,20 +38,6 @@
             "problemMatcher": []
         },
         {
-            "label": "run",
-            "type": "shell",
-            "isBackground": true,
-            "command": "E:\\emulation\\mGBA\\mGBA.exe",
-            "args": [
-                "${workspaceFolder}/${workspaceFolderBasename}.nds"
-            ],
-            "presentation": {
-                "clear": true,
-                "reveal": "always"
-            },
-            "problemMatcher": []
-        },
-        {
             "label": "gdb-debug",
             "type": "shell",
             "dependsOn": [
@@ -54,8 +47,8 @@
             "command": "E:\\emulation\\mGBA\\mGBA.exe",
             "args": [
                 "-g",
-                "-1",
-                "${workspaceFolder}/${workspaceFolderBasename}.gba"
+                "-3",
+                "${workspaceFolder}/${workspaceFolderBasename}.gba",
             ],
             "presentation": {
                 "clear": true,
