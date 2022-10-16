@@ -15,7 +15,7 @@ jobs:
       - name: Build image
         run: docker build . -t gba_build:latest
       - name: Build Rom
-        run: docker run -v ${PWD}:/app  -e OPTIMIZATION_LEVEL=03 gba_build:latest
+        run: docker run -v ${PWD}:/app  -e OPTIMIZATION_LEVEL=O3 gba_build:latest
       - name: rename file
         run: mv app.gba march_good_maybe.gba
       - name: Create Release
