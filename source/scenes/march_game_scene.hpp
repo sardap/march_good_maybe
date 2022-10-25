@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../collision.hpp"
 #include "../entt.hpp"
 #include "../gfx_utils.hpp"
 #include "../object.hpp"
@@ -16,6 +17,7 @@ struct MarchGameData {
     u16 ground_map[SB_SIZE_SHORT];
     ScrollingBackground<Background::ONE, BackgroundType::REG_32x32> bg_ground;
     int sky_x;
+    CollisionEventContainer<50, 10> collision_events;
 };
 
 extern Scene g_march_game_scene;

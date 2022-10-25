@@ -51,23 +51,30 @@ static void load(SceneArgs &args) {
         int y = (i * 20) + 40 + qran_range(2, 5);
         switch (qran_range(0, 3)) {
             case 0:
-                units::create_front_line_unit(data, entity, x, y);
+                units::create_front_line_unit(
+                    data, entity, data.collision_events.get_next_idx(), x, y);
                 break;
             case 1:
-                units::create_light_front_line_man_unit(data, entity, x, y);
+                units::create_light_front_line_man_unit(
+                    data, entity, data.collision_events.get_next_idx(), x, y);
                 break;
             case 2:
-                units::create_ranged_man_unit(data, entity, x, y);
+                units::create_ranged_man_unit(
+                    data, entity, data.collision_events.get_next_idx(), x, y);
                 break;
         }
     }
 
-    data.bg_ground.init(GfxMarchGameBackgroundGroundMap, 256,
+    data.bg_ground.init(data.registry, data.collision_events.get_next_idx(),
+                        GfxMarchGameBackgroundGroundMap, 256,
                         MGS_GROUND_BACKGROUND_LAYER_PRIO, MGS_SHARED_CBB,
                         MGS_GROUND_BACKGROUND_SBB);
 }
 
-static void free() {}
+static void free() {
+    auto &data = std::get<MarchGameData>(g_scene_data);
+    data.registry.clear();
+}
 
 static void update() {
     VBlankIntrWait();
@@ -78,11 +85,11 @@ static void update() {
     static const int cam_speed = 4;
 
     if (key_held(KEY_RIGHT)) {
-        data.bg_ground.add_to_cam_x(cam_speed);
+        data.bg_ground.add_to_cam_x(data.registry, cam_speed);
         data.sky_x = clamp(data.sky_x + 1, 0, 10000);
     }
     if (key_held(KEY_LEFT)) {
-        data.bg_ground.add_to_cam_x(-cam_speed);
+        data.bg_ground.add_to_cam_x(data.registry, -cam_speed);
         data.sky_x = clamp(data.sky_x - 1, 0, 10000);
     }
 
@@ -94,6 +101,9 @@ static void update() {
     systems::step_front_line_man(data.registry);
     systems::step_ranged_man(data.registry);
     systems::step_vel_system(data.registry);
+    systems::step_collision_system(data.registry, data.collision_events);
+    systems::step_object_visible_system(
+        data.registry, data.bg_ground.get_camera_id(), data.collision_events);
     systems::step_objects(data.registry);
 }
 

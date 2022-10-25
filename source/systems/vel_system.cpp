@@ -7,8 +7,7 @@ void step_vel_system(entt::registry& registry) {
     auto view = registry.view<Position, Velocity>();
 
     for (auto entity : view) {
-        auto& pos = view.get<Position>(entity);
-        auto& vel = view.get<Velocity>(entity);
+        auto [pos, vel] = view.get<Position, Velocity>(entity);
 
         pos.x += vel.dx;
         pos.y += vel.dy;

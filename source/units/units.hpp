@@ -20,20 +20,25 @@ concept IsUnitCreationSet = requires(T a) {
 };
 
 template <IsAllocatorSet UCS>
-void create_base_unit(UCS& ucs, const entt::entity& entity, int start_x,
-                      int start_y) {
+void create_base_unit(UCS& ucs, const entt::entity& entity, u32 col_event_id,
+                      int start_x, int start_y, CollisionTypes collision_type) {
     entt::registry& registry = ucs.registry;
 
-    registry.emplace<Position>(entity, start_x, start_y);
-    registry.emplace<Velocity>(entity, 0, 0);
+    registry.emplace<Position>(entity, start_x, start_y, 16, 16);
+    auto col = Collision{.collision_type = collision_type,
+                         .collision_events_idx = col_event_id};
+    registry.emplace<Collision>(entity, col);
+    registry.emplace<Velocity>(entity, 0., 0);
+    registry.emplace<VisibleOnlyInCam>(entity);
 }
 
 template <IsAllocatorSet UCS>
-void create_front_line_unit(UCS& ucs, const entt::entity& entity, int start_x,
-                            int start_y) {
+void create_front_line_unit(UCS& ucs, const entt::entity& entity,
+                            u32 col_event_id, int start_x, int start_y) {
     entt::registry& registry = ucs.registry;
 
-    create_base_unit(ucs, entity, start_x, start_y);
+    create_base_unit(ucs, entity, col_event_id, start_x, start_y,
+                     CollisionTypes::LINE_MAN);
 
     auto& obj = registry.emplace<Object>(entity);
 
@@ -45,16 +50,18 @@ void create_front_line_unit(UCS& ucs, const entt::entity& entity, int start_x,
     GRIT_CPY(&tile_mem_obj[0][obj.tile_offset],
              GfxMarchGameUnitsFrontLineManTiles);
 
-    static const float speed = 0.0f;
+    static const float speed = 0.5f;
     registry.emplace<FrontLineMan>(entity, speed);
 }
 
 template <IsAllocatorSet UCS>
 void create_light_front_line_man_unit(UCS& ucs, const entt::entity& entity,
-                                      int start_x, int start_y) {
+                                      u32 col_event_id, int start_x,
+                                      int start_y) {
     entt::registry& registry = ucs.registry;
 
-    create_base_unit(ucs, entity, start_x, start_y);
+    create_base_unit(ucs, entity, col_event_id, start_x, start_y,
+                     CollisionTypes::LINE_LIGHT_MAN);
 
     auto& obj = registry.emplace<Object>(entity);
 
@@ -66,16 +73,17 @@ void create_light_front_line_man_unit(UCS& ucs, const entt::entity& entity,
     GRIT_CPY(&tile_mem_obj[0][obj.tile_offset],
              GfxMarchGameUnitsLightFrontLineManTiles);
 
-    static const float speed = 0.0f;
+    static const float speed = 0.5f;
     registry.emplace<LightFrontLine>(entity, speed);
 }
 
 template <IsAllocatorSet UCS>
-void create_ranged_man_unit(UCS& ucs, const entt::entity& entity, int start_x,
-                            int start_y) {
+void create_ranged_man_unit(UCS& ucs, const entt::entity& entity,
+                            u32 col_event_id, int start_x, int start_y) {
     entt::registry& registry = ucs.registry;
 
-    create_base_unit(ucs, entity, start_x, start_y);
+    create_base_unit(ucs, entity, col_event_id, start_x, start_y,
+                     CollisionTypes::RANGED_MAN);
 
     auto& obj = registry.emplace<Object>(entity);
 
@@ -87,7 +95,7 @@ void create_ranged_man_unit(UCS& ucs, const entt::entity& entity, int start_x,
     GRIT_CPY(&tile_mem_obj[0][obj.tile_offset],
              GfxMarchGameUnitsRangedManTiles);
 
-    static const float speed = 0.0f;
+    static const float speed = 0.5f;
     registry.emplace<RangedMan>(entity, speed);
 }
 

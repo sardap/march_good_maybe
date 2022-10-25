@@ -8,8 +8,7 @@ void step_ranged_man(entt::registry& registry) {
     auto view = registry.view<RangedMan, Velocity>();
 
     for (auto entity : view) {
-        auto& rm = view.get<RangedMan>(entity);
-        auto& vel = view.get<Velocity>(entity);
+        auto [rm, vel] = view.get<RangedMan, Velocity>(entity);
 
         switch (rm.state) {
             case RangedMan::States::JUST_SPAWNED:

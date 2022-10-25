@@ -8,13 +8,12 @@
 namespace mgm::systems {
 
 void step_objects(entt::registry& registry) {
-    auto view = registry.view<Position, Object>();
+    auto view = registry.view<const Object>();
 
     obj_hide_multi(g_oam, g_oam_length);
 
     for (auto entity : view) {
-        auto& pos = view.get<Position>(entity);
-        auto& obj = view.get<Object>(entity);
+        auto& obj = view.get<const Object>(entity);
 
         OBJ_ATTR* game_object = &g_oam[obj.id];
 
@@ -23,8 +22,8 @@ void step_objects(entt::registry& registry) {
 
         obj_unhide(game_object, 0);
 
-        obj_set_pos(game_object, static_cast<int>(pos.x),
-                    static_cast<int>(pos.y));
+        obj_set_pos(game_object, static_cast<int>(obj.x),
+                    static_cast<int>(obj.y));
     }
 
     oam_copy(oam_mem, g_oam, g_oam_length);

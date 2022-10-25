@@ -56,6 +56,11 @@ class Fixed {
         return *this;
     }
 
+    Fixed<T>& operator+=(const int other) noexcept {
+        m_val += int2fx(other);
+        return *this;
+    }
+
     Fixed<T> operator-(const Fixed<T>& other) const {
         return raw_initialise(m_val - other.m_val);
     }
