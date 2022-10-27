@@ -17,7 +17,7 @@ struct MarchGameData {
     u16 ground_map[SB_SIZE_SHORT];
     ScrollingBackground<Background::ONE, BackgroundType::REG_32x32> bg_ground;
     int sky_x;
-    CollisionEventContainer<50, 10> collision_events;
+    CollisionEventContainer<50, 10> collision_events_container;
 };
 
 extern Scene g_march_game_scene;

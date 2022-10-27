@@ -3,6 +3,8 @@
 #include <tonc_math.h>
 #include <tonc_types.h>
 
+#include <concepts>
+
 namespace mgm::math {
 
 template <typename T>
@@ -64,6 +66,8 @@ class Fixed {
     Fixed<T> operator-(const Fixed<T>& other) const {
         return raw_initialise(m_val - other.m_val);
     }
+
+    Fixed<T> operator-() const { return raw_initialise(-m_val); }
 
     Fixed<T>& operator-=(const Fixed<T>& other) noexcept {
         m_val -= other.m_val;

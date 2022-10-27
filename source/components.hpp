@@ -43,7 +43,7 @@ enum class CollisionTypes {
 
 struct Collision {
     CollisionTypes collision_type;
-    u32 collision_events_idx;
+    u32 collision_events_key;
 };
 
 struct VisibleOnlyInCam {};

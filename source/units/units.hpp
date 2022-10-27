@@ -16,29 +16,38 @@ namespace mgm::units {
 // https://stackoverflow.com/questions/69686934/concept-checking-on-struct-members
 template <typename T>
 concept IsUnitCreationSet = requires(T a) {
-    requires IsAllocatorSet<T>;
+    // { a.registry } -> std::convertible_to<entt::registry>;
+    { a.tiles_allocator } -> std::convertible_to<IsAllocator>;
+    { a.pallette_allocator } -> std::convertible_to<IsAllocator>;
+    {
+        a.collision_events_container
+        } -> std::convertible_to<IsCollisionEventContainer>;
 };
 
-template <IsAllocatorSet UCS>
-void create_base_unit(UCS& ucs, const entt::entity& entity, u32 col_event_id,
-                      int start_x, int start_y, CollisionTypes collision_type) {
+template <IsUnitCreationSet UCS>
+entt::entity create_base_unit(UCS& ucs, int start_x, int start_y,
+                              CollisionTypes collision_type) {
     entt::registry& registry = ucs.registry;
 
+    const auto& entity = registry.create();
+
     registry.emplace<Position>(entity, start_x, start_y, 16, 16);
-    auto col = Collision{.collision_type = collision_type,
-                         .collision_events_idx = col_event_id};
+    auto col = Collision{
+        .collision_type = collision_type,
+        .collision_events_key = ucs.collision_events_container.get_next_key()};
     registry.emplace<Collision>(entity, col);
     registry.emplace<Velocity>(entity, 0., 0);
     registry.emplace<VisibleOnlyInCam>(entity);
+
+    return entity;
 }
 
-template <IsAllocatorSet UCS>
-void create_front_line_unit(UCS& ucs, const entt::entity& entity,
-                            u32 col_event_id, int start_x, int start_y) {
+template <IsUnitCreationSet UCS>
+void create_front_line_unit(UCS& ucs, int start_x, int start_y) {
     entt::registry& registry = ucs.registry;
 
-    create_base_unit(ucs, entity, col_event_id, start_x, start_y,
-                     CollisionTypes::LINE_MAN);
+    const auto& entity =
+        create_base_unit(ucs, start_x, start_y, CollisionTypes::LINE_MAN);
 
     auto& obj = registry.emplace<Object>(entity);
 
@@ -54,14 +63,12 @@ void create_front_line_unit(UCS& ucs, const entt::entity& entity,
     registry.emplace<FrontLineMan>(entity, speed);
 }
 
-template <IsAllocatorSet UCS>
-void create_light_front_line_man_unit(UCS& ucs, const entt::entity& entity,
-                                      u32 col_event_id, int start_x,
-                                      int start_y) {
+template <IsUnitCreationSet UCS>
+void create_light_front_line_man_unit(UCS& ucs, int start_x, int start_y) {
     entt::registry& registry = ucs.registry;
 
-    create_base_unit(ucs, entity, col_event_id, start_x, start_y,
-                     CollisionTypes::LINE_LIGHT_MAN);
+    const auto& entity =
+        create_base_unit(ucs, start_x, start_y, CollisionTypes::LINE_LIGHT_MAN);
 
     auto& obj = registry.emplace<Object>(entity);
 
@@ -77,13 +84,12 @@ void create_light_front_line_man_unit(UCS& ucs, const entt::entity& entity,
     registry.emplace<LightFrontLine>(entity, speed);
 }
 
-template <IsAllocatorSet UCS>
-void create_ranged_man_unit(UCS& ucs, const entt::entity& entity,
-                            u32 col_event_id, int start_x, int start_y) {
+template <IsUnitCreationSet UCS>
+void create_ranged_man_unit(UCS& ucs, int start_x, int start_y) {
     entt::registry& registry = ucs.registry;
 
-    create_base_unit(ucs, entity, col_event_id, start_x, start_y,
-                     CollisionTypes::RANGED_MAN);
+    const auto& entity =
+        create_base_unit(ucs, start_x, start_y, CollisionTypes::RANGED_MAN);
 
     auto& obj = registry.emplace<Object>(entity);
 
@@ -96,7 +102,7 @@ void create_ranged_man_unit(UCS& ucs, const entt::entity& entity,
              GfxMarchGameUnitsRangedManTiles);
 
     static const float speed = 0.5f;
-    registry.emplace<RangedMan>(entity, speed);
+    registry.emplace<RangedMan>(entity, speed, RangedMan::States::JUST_SPAWNED);
 }
 
 }  // namespace mgm::units

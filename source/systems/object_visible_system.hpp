@@ -10,7 +10,7 @@ bool in_camera(entt::entity cam_id, const Collision& col,
                const T& collision_events_container) {
     for (u32 i = 0; i < T::EVENT_COUNT; i++) {
         auto event = collision_events_container.get_collision_event(
-            col.collision_events_idx, i);
+            col.collision_events_key, i);
         if (!event.has_value()) {
             break;
         }

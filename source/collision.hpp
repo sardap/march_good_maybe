@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <concepts>
 #include <optional>
 
@@ -27,14 +28,11 @@ struct CollisionEvent {
     CollisionTypes collision_type;
 };
 
-// template <typename T>
-// concept IsCollisionEventContainer = T::EVENT_COUNT;
-
 template <typename T>
 concept IsCollisionEventContainer = requires(T a, u32 id, u32 event_idx,
                                              CollisionEvent event) {
     a.clear();
-    { a.get_next_idx() } -> std::convertible_to<u32>;
+    { a.get_next_key() } -> std::convertible_to<u32>;
     a.add_collision_event(id, event_idx, event);
     {
         a.get_collision_event(id, event_idx)
@@ -68,7 +66,7 @@ class CollisionEventContainer {
         m_top_idx = 0;
     }
 
-    u32 get_next_idx() {
+    u32 get_next_key() {
         auto result = m_top_idx;
         m_top_idx++;
         return result;
