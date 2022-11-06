@@ -87,7 +87,8 @@ class ScrollingBackground {
 
     void add_to_cam_x(entt::registry& registry, DefaultFixed val) {
         const DefaultFixed min_cam_x = 0;
-        const DefaultFixed max_cam_x = 256 * 8;
+        const DefaultFixed max_cam_x =
+            DefaultFixed(static_cast<int>(m_source_width_tiles));
 
         auto& camera = get_camera(registry);
         DefaultFixed new_cam_x =

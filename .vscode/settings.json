@@ -101,14 +101,18 @@
     "editor.formatOnSave": true,
     "C_Cpp.errorSquiggles": "Disabled",
     "cSpell.words": [
+        "COMS",
         "DCNT",
         "DISPCNT",
         "entt",
+        "EWRAM",
         "fxdiv",
         "fxmul",
+        "HFLIP",
         "HOFS",
         "qran",
         "VBLANK",
+        "VFLIP",
         "VOFS"
     ]
 }

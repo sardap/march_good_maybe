@@ -23,6 +23,30 @@ static const int MGS_GROUND_BACKGROUND_LAYER_PRIO = 0;
 
 static const Background SKY_BACKGROUND = Background::ZERO;
 
+static void generate_units_for_team(MarchGameData &data, const Teams team,
+                                    int count, int start_x) {
+    for (int i = 0; i < count; ++i) {
+        int x = start_x;
+        int y = (i * 20) + 40 + qran_range(2, 5);
+        switch (qran_range(0, 2)) {
+            case 0:
+                units::create_front_line_unit(data, team, x, y);
+                break;
+            case 1:
+                units::create_light_front_line_man_unit(data, team, x, y);
+                break;
+            case 2:
+                units::create_ranged_man_unit(data, team, x, y);
+                break;
+        }
+    }
+}
+
+static void generate_all_units(MarchGameData &data) {
+    generate_units_for_team(data, Teams::RED, 6, 5);
+    generate_units_for_team(data, Teams::BLUE, 3, 300);
+}
+
 static void load(SceneArgs &args) {
     irq_init(NULL);
     irq_enable(II_VBLANK);
@@ -45,24 +69,11 @@ static void load(SceneArgs &args) {
 
     // Create units
     GRIT_CPY(pal_obj_mem, MarchGameUnitsSharedPal);
-    for (int i = 0; i < 6; ++i) {
-        int x = 0;
-        int y = (i * 20) + 40 + qran_range(2, 5);
-        switch (qran_range(0, 3)) {
-            case 0:
-                units::create_front_line_unit(data, x, y);
-                break;
-            case 1:
-                units::create_light_front_line_man_unit(data, x, y);
-                break;
-            case 2:
-                units::create_ranged_man_unit(data, x, y);
-                break;
-        }
-    }
+    generate_all_units(data);
 
     data.bg_ground.init(data.registry, data.collision_events_container,
-                        GfxMarchGameBackgroundGroundMap, 256,
+                        GfxMarchGameBackgroundGroundMap,
+                        GfxMarchGameBackgroundGroundMapLen / 64,
                         MGS_GROUND_BACKGROUND_LAYER_PRIO, MGS_SHARED_CBB,
                         MGS_GROUND_BACKGROUND_SBB);
 }
@@ -78,7 +89,7 @@ static void update() {
 
     auto &data = std::get<MarchGameData>(g_scene_data);
 
-    static const DefaultFixed cam_speed = 3.5f;
+    static const DefaultFixed cam_speed = 8;
 
     if (key_held(KEY_RIGHT)) {
         data.bg_ground.add_to_cam_x(data.registry, cam_speed);
@@ -93,12 +104,11 @@ static void update() {
 
     set_background_x(SKY_BACKGROUND, data.sky_x);
 
-    systems::step_light_front_line_man(data.registry);
-    systems::step_front_line_man(data.registry);
-    systems::step_ranged_man(data.registry);
     systems::step_vel_system(data.registry);
     systems::step_collision_system(data.registry,
                                    data.collision_events_container);
+    systems::step_unit_logic_system(data.registry,
+                                    data.collision_events_container);
     systems::step_object_visible_system(data.registry,
                                         data.bg_ground.get_camera_id(),
                                         data.collision_events_container);

@@ -24,16 +24,19 @@ concept IsUnitCreationSet = requires(T a) {
         } -> std::convertible_to<IsCollisionEventContainer>;
 };
 
+void fix_sprite(Object& obj, const Teams team) {
+    obj.x_flip = team == Teams::BLUE;
+}
+
 template <IsUnitCreationSet UCS>
-entt::entity create_base_unit(UCS& ucs, int start_x, int start_y,
-                              CollisionTypes collision_type) {
+entt::entity create_base_unit(UCS& ucs, int start_x, int start_y) {
     entt::registry& registry = ucs.registry;
 
     const auto& entity = registry.create();
 
     registry.emplace<Position>(entity, start_x, start_y, 16, 16);
     auto col = Collision{
-        .collision_type = collision_type,
+        .collision_type = CollisionTypes::UNIT,
         .collision_events_key = ucs.collision_events_container.get_next_key()};
     registry.emplace<Collision>(entity, col);
     registry.emplace<Velocity>(entity, 0., 0);
@@ -43,11 +46,10 @@ entt::entity create_base_unit(UCS& ucs, int start_x, int start_y,
 }
 
 template <IsUnitCreationSet UCS>
-void create_front_line_unit(UCS& ucs, int start_x, int start_y) {
+void create_front_line_unit(UCS& ucs, Teams team, int start_x, int start_y) {
     entt::registry& registry = ucs.registry;
 
-    const auto& entity =
-        create_base_unit(ucs, start_x, start_y, CollisionTypes::LINE_MAN);
+    const auto& entity = create_base_unit(ucs, start_x, start_y);
 
     auto& obj = registry.emplace<Object>(entity);
 
@@ -59,16 +61,23 @@ void create_front_line_unit(UCS& ucs, int start_x, int start_y) {
     GRIT_CPY(&tile_mem_obj[0][obj.tile_offset],
              GfxMarchGameUnitsFrontLineManTiles);
 
-    static const float speed = 0.5f;
-    registry.emplace<FrontLineMan>(entity, speed);
+    fix_sprite(obj, team);
+
+    registry.emplace<Unit>(
+        entity, UnitTypes::FRONT_LINE_MAN, team, 2.5f, 100,
+        Unit::MeleeDumb{.state = Unit::MeleeDumb::State::JUST_SPAWNED,
+                        .damage = 10,
+                        .attacking = std::nullopt,
+                        .attack_cooldown = 60,
+                        .attack_cooldown_remaining = 0});
 }
 
 template <IsUnitCreationSet UCS>
-void create_light_front_line_man_unit(UCS& ucs, int start_x, int start_y) {
+void create_light_front_line_man_unit(UCS& ucs, Teams team, int start_x,
+                                      int start_y) {
     entt::registry& registry = ucs.registry;
 
-    const auto& entity =
-        create_base_unit(ucs, start_x, start_y, CollisionTypes::LINE_LIGHT_MAN);
+    const auto& entity = create_base_unit(ucs, start_x, start_y);
 
     auto& obj = registry.emplace<Object>(entity);
 
@@ -80,16 +89,22 @@ void create_light_front_line_man_unit(UCS& ucs, int start_x, int start_y) {
     GRIT_CPY(&tile_mem_obj[0][obj.tile_offset],
              GfxMarchGameUnitsLightFrontLineManTiles);
 
-    static const float speed = 0.5f;
-    registry.emplace<LightFrontLine>(entity, speed);
+    fix_sprite(obj, team);
+
+    registry.emplace<Unit>(
+        entity, UnitTypes::LIGHT_FRONT_LINE_MAN, team, 2.5f, 100,
+        Unit::MeleeDumb{.state = Unit::MeleeDumb::State::JUST_SPAWNED,
+                        .damage = 10,
+                        .attacking = std::nullopt,
+                        .attack_cooldown = 60,
+                        .attack_cooldown_remaining = 0});
 }
 
 template <IsUnitCreationSet UCS>
-void create_ranged_man_unit(UCS& ucs, int start_x, int start_y) {
+void create_ranged_man_unit(UCS& ucs, Teams team, int start_x, int start_y) {
     entt::registry& registry = ucs.registry;
 
-    const auto& entity =
-        create_base_unit(ucs, start_x, start_y, CollisionTypes::RANGED_MAN);
+    const auto& entity = create_base_unit(ucs, start_x, start_y);
 
     auto& obj = registry.emplace<Object>(entity);
 
@@ -101,8 +116,11 @@ void create_ranged_man_unit(UCS& ucs, int start_x, int start_y) {
     GRIT_CPY(&tile_mem_obj[0][obj.tile_offset],
              GfxMarchGameUnitsRangedManTiles);
 
-    static const float speed = 0.5f;
-    registry.emplace<RangedMan>(entity, speed, RangedMan::States::JUST_SPAWNED);
+    fix_sprite(obj, team);
+
+    registry.emplace<Unit>(
+        entity, UnitTypes::RANGED_MAN, team, 2.5f, 100,
+        Unit::RangedDumb{.state = Unit::RangedDumb::State::JUST_SPAWNED});
 }
 
 }  // namespace mgm::units

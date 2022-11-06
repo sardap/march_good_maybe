@@ -24,7 +24,7 @@ LIBTONC := $(DEVKITPRO)/tonclib $(DEVKITPRO)/libtonc
 #---------------------------------------------------------------------------------
 TARGET		:= $(notdir $(CURDIR))
 BUILD		:= build
-SOURCES		:= source source/scenes source/systems build/gfx 
+SOURCES		:= source source/scenes source/systems source/units build/gfx 
 INCLUDES	:= include 
 DATA		:=
 MUSIC		:=
@@ -39,6 +39,11 @@ IGNORE_WARNINGS = -Wno-volatile
 ENTT_HEADER_FILE_DOWNLOAD_LINK = https://raw.githubusercontent.com/skypjack/entt/e5172a9240728cc271af7599c6f13580329f3618/single_include/entt/entt.hpp
 MGBA_HEADER_FILE_DOWNLOAD_LINK = https://raw.githubusercontent.com/mgba-emu/mgba/686eee4e20cc555b90810811f2d0d6f8b9b393c5/opt/libgba/mgba.h
 MGBA_SOURCE_FILE_DOWNLOAD_LINK = https://raw.githubusercontent.com/mgba-emu/mgba/686eee4e20cc555b90810811f2d0d6f8b9b393c5/opt/libgba/mgba.c
+
+SPARSE_MAP_SPARSE_GROWTH_POLICY_LINK = https://raw.githubusercontent.com/Tessil/sparse-map/89d30537eb5326606b6a45bbf00b4f4ff04417fa/include/tsl/sparse_growth_policy.h
+SPARSE_MAP_SPARSE_HASH_LINK = https://raw.githubusercontent.com/Tessil/sparse-map/89d30537eb5326606b6a45bbf00b4f4ff04417fa/include/tsl/sparse_hash.h
+SPARSE_MAP_SPARSE_MAP_LINK = https://raw.githubusercontent.com/Tessil/sparse-map/89d30537eb5326606b6a45bbf00b4f4ff04417fa/include/tsl/sparse_map.h
+SPARSE_MAP_SPARSE_SET_LINK = https://raw.githubusercontent.com/Tessil/sparse-map/89d30537eb5326606b6a45bbf00b4f4ff04417fa/include/tsl/sparse_set.h
 
 
 #---------------------------------------------------------------------------------
@@ -144,6 +149,23 @@ endif
 ifeq (,$(wildcard ./build/mgba/mgba.c))
 	@mkdir -p build/mgba
 	@wget -O build/mgba/mgba.c $(MGBA_SOURCE_FILE_DOWNLOAD_LINK)
+endif
+# Sparse Map
+ifeq (,$(wildcard ./build/tsl/sparse_growth_policy.h))
+	@mkdir -p build/tsl
+	@wget -O build/tsl/sparse_growth_policy.h $(SPARSE_MAP_SPARSE_GROWTH_POLICY_LINK)
+endif
+ifeq (,$(wildcard ./build/tsl/sparse_hash.h))
+	@mkdir -p build/tsl
+	@wget -O build/tsl/sparse_hash.h $(SPARSE_MAP_SPARSE_HASH_LINK)
+endif
+ifeq (,$(wildcard ./build/tsl/sparse_map.h))
+	@mkdir -p build/tsl
+	@wget -O build/tsl/sparse_map.h $(SPARSE_MAP_SPARSE_MAP_LINK)
+endif
+ifeq (,$(wildcard ./build/tsl/sparse_set.h))
+	@mkdir -p build/tsl
+	@wget -O build/tsl/sparse_set.h $(SPARSE_MAP_SPARSE_SET_LINK)
 endif
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 

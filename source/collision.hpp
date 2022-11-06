@@ -28,6 +28,9 @@ struct CollisionEvent {
     CollisionTypes collision_type;
 };
 
+using CollisionEventInstance =
+    std::optional<std::reference_wrapper<const CollisionEvent>>;
+
 template <typename T>
 concept IsCollisionEventContainer = requires(T a, u32 id, u32 event_idx,
                                              CollisionEvent event) {
@@ -36,8 +39,7 @@ concept IsCollisionEventContainer = requires(T a, u32 id, u32 event_idx,
     a.add_collision_event(id, event_idx, event);
     {
         a.get_collision_event(id, event_idx)
-        } -> std::convertible_to<
-            std::optional<std::reference_wrapper<const CollisionEvent>>>;
+        } -> std::convertible_to<CollisionEventInstance>;
     T::EVENT_COUNT;
 };
 
@@ -72,8 +74,7 @@ class CollisionEventContainer {
         return result;
     }
 
-    std::optional<std::reference_wrapper<const CollisionEvent>>
-    get_collision_event(u32 id, u32 event_idx) const {
+    CollisionEventInstance get_collision_event(u32 id, u32 event_idx) const {
         return m_collision_events[id][event_idx];
     }
 

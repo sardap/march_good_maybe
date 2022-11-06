@@ -2,7 +2,9 @@
 
 #include <tonc_types.h>
 
+#include <functional>
 #include <optional>
+#include <variant>
 
 #include "entt.hpp"
 #include "fixed/fixed.hpp"
@@ -31,14 +33,13 @@ struct Object {
     int tile_offset;
     int pal_offset;
     bool show;
+    bool x_flip;
+    bool y_flip;
 };
 
 enum class CollisionTypes {
     CAMERA,
-    LINE_MAN,
-    LINE_LIGHT_MAN,
-    RANGED_MAN,
-
+    UNIT,
 };
 
 struct Collision {
@@ -50,25 +51,46 @@ struct VisibleOnlyInCam {};
 
 struct Camera {};
 
-struct FrontLineMan {
-    enum class States { JUST_SPAWNED, MOVING, FIGHTING };
+enum class Teams { RED, BLUE };
 
+enum class UnitTypes { FRONT_LINE_MAN, LIGHT_FRONT_LINE_MAN, RANGED_MAN };
+
+enum class LogicType { MELEE_DUMB, RANGED_DUMB };
+
+inline LogicType unit_type_to_logic_type(UnitTypes type) {
+    switch (type) {
+        using enum UnitTypes;
+        case FRONT_LINE_MAN:
+        case LIGHT_FRONT_LINE_MAN:
+            return LogicType::MELEE_DUMB;
+        case RANGED_MAN:
+            return LogicType::RANGED_DUMB;
+    }
+
+    return LogicType::MELEE_DUMB;
+}
+
+struct Unit {
+    UnitTypes type;
+    Teams team;
     DefaultFixed speed;
-    States state;
-};
+    int health;
 
-struct LightFrontLine {
-    enum class States { JUST_SPAWNED, MOVING, FIGHTING };
+    struct MeleeDumb {
+        enum class State { JUST_SPAWNED, FORWARD, FIGHTING };
+        State state;
+        int damage;
+        std::optional<entt::entity> attacking;
+        int attack_cooldown;
+        int attack_cooldown_remaining;
+    };
 
-    DefaultFixed speed;
-    States state;
-};
+    struct RangedDumb {
+        enum class State { JUST_SPAWNED, FORWARD, FIGHTING };
+        State state;
+    };
 
-struct RangedMan {
-    enum class States { JUST_SPAWNED, MOVING, FIGHTING };
-
-    DefaultFixed speed;
-    States state;
+    std::variant<MeleeDumb, RangedDumb> specific;
 };
 
 }  // namespace mgm
