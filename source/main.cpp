@@ -1,27 +1,11 @@
 #include <tonc.h>
 
 #include "ecs/ecs.hpp"
-#include "entt.hpp"
 #include "frame_counter.hpp"
 #include "scenes/controller.hpp"
 #include "scenes/main_menu_scene.hpp"
 
-struct ComOne {
-    bool foo;
-    int bar[50];
-};
-
-struct ComTwo {
-    bool foo;
-};
-
-struct ComThree {
-    bool foo;
-};
-
-int main(void) {
-    using namespace mgm;
-
+/*
     constexpr int ENTITY_COUNT = 50;
     using Registry =
         ecs::Registry<ENTITY_COUNT,
@@ -64,6 +48,12 @@ int main(void) {
         auto [com_one, com_two] = view.get();
         com_one.foo = true;
     }
+
+
+*/
+
+int main(void) {
+    using namespace mgm;
 
     reset_frame_counter();
 

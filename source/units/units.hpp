@@ -7,7 +7,6 @@
 #include <tonc.h>
 
 #include "../components.hpp"
-#include "../entt.hpp"
 #include "../object.hpp"
 
 namespace mgm::units {
@@ -16,12 +15,8 @@ namespace mgm::units {
 // https://stackoverflow.com/questions/69686934/concept-checking-on-struct-members
 template <typename T>
 concept IsUnitCreationSet = requires(T a) {
-    // { a.registry } -> std::convertible_to<entt::registry>;
     { a.tiles_allocator } -> std::convertible_to<IsAllocator>;
     { a.pallette_allocator } -> std::convertible_to<IsAllocator>;
-    {
-        a.collision_events_container
-        } -> std::convertible_to<IsCollisionEventContainer>;
 };
 
 void fix_sprite(Object& obj, const Teams team) {
@@ -29,98 +24,103 @@ void fix_sprite(Object& obj, const Teams team) {
 }
 
 template <IsUnitCreationSet UCS>
-entt::entity create_base_unit(UCS& ucs, int start_x, int start_y) {
-    entt::registry& registry = ucs.registry;
+ecs::EntityID create_base_unit(UCS& ucs, int start_x, int start_y) {
+    const auto& entity = ucs.registry.create();
 
-    const auto& entity = registry.create();
-
-    registry.emplace<Position>(entity, start_x, start_y, 16, 16);
-    auto col = Collision{
-        .collision_type = CollisionTypes::UNIT,
-        .collision_events_key = ucs.collision_events_container.get_next_key()};
-    registry.emplace<Collision>(entity, col);
-    registry.emplace<Velocity>(entity, 0., 0);
-    registry.emplace<VisibleOnlyInCam>(entity);
+    ucs.registry.template emplace<Position>(
+        entity,
+        Position{.x = start_x, .y = start_y, .width = 16, .height = 16});
+    ucs.registry.template emplace<Collision>(
+        entity,
+        Collision{.collision_type = CollisionTypes::UNIT, .events = {}});
+    ucs.registry.template emplace<Velocity>(entity, Velocity{.dx = 0, .dy = 0});
+    ucs.registry.template emplace<VisibleOnlyInCam>(entity, VisibleOnlyInCam{});
 
     return entity;
 }
 
 template <IsUnitCreationSet UCS>
 void create_front_line_unit(UCS& ucs, Teams team, int start_x, int start_y) {
-    entt::registry& registry = ucs.registry;
-
     const auto& entity = create_base_unit(ucs, start_x, start_y);
 
-    auto& obj = registry.emplace<Object>(entity);
+    Object& obj = ucs.registry.template emplace<Object>(
+        entity,
+        Object{.id = ucs.object_allocator.allocate(1),
+               .size = ATTR1_SIZE_16x16,
+               .tile_offset = ucs.tiles_allocator.allocate(get_tile_count_4bpp(
+                   GfxMarchGameUnitsFrontLineManTilesLen))});
 
-    obj.id = ucs.object_allocator.allocate(1);
-    obj.size = ATTR1_SIZE_16x16;
-
-    obj.tile_offset = ucs.tiles_allocator.allocate(
-        get_tile_count_4bpp(GfxMarchGameUnitsFrontLineManTilesLen));
     GRIT_CPY(&tile_mem_obj[0][obj.tile_offset],
              GfxMarchGameUnitsFrontLineManTiles);
 
     fix_sprite(obj, team);
 
-    registry.emplace<Unit>(
-        entity, UnitTypes::FRONT_LINE_MAN, team, 2.5f, 100,
-        Unit::MeleeDumb{.state = Unit::MeleeDumb::State::JUST_SPAWNED,
-                        .damage = 10,
-                        .attacking = std::nullopt,
-                        .attack_cooldown = 60,
-                        .attack_cooldown_remaining = 0});
+    ucs.registry.template emplace<Unit>(
+        entity, Unit{.type = UnitTypes::FRONT_LINE_MAN,
+                     .team = team,
+                     .speed = 2.5f,
+                     .health = 100,
+                     .specific = Unit::MeleeDumb{
+                         .state = Unit::MeleeDumb::State::JUST_SPAWNED,
+                         .damage = 10,
+                         .attacking = std::nullopt,
+                         .attack_cooldown = 60,
+                         .attack_cooldown_remaining = 0}});
 }
 
 template <IsUnitCreationSet UCS>
 void create_light_front_line_man_unit(UCS& ucs, Teams team, int start_x,
                                       int start_y) {
-    entt::registry& registry = ucs.registry;
-
     const auto& entity = create_base_unit(ucs, start_x, start_y);
 
-    auto& obj = registry.emplace<Object>(entity);
+    Object& obj = ucs.registry.template emplace<Object>(
+        entity,
+        Object{.id = ucs.object_allocator.allocate(1),
+               .size = ATTR1_SIZE_16x16,
+               .tile_offset = ucs.tiles_allocator.allocate(get_tile_count_4bpp(
+                   GfxMarchGameUnitsLightFrontLineManTilesLen))});
 
-    obj.id = ucs.object_allocator.allocate(1);
-    obj.size = ATTR1_SIZE_16x16;
-
-    obj.tile_offset = ucs.tiles_allocator.allocate(
-        get_tile_count_4bpp(GfxMarchGameUnitsLightFrontLineManTilesLen));
     GRIT_CPY(&tile_mem_obj[0][obj.tile_offset],
              GfxMarchGameUnitsLightFrontLineManTiles);
 
     fix_sprite(obj, team);
 
-    registry.emplace<Unit>(
-        entity, UnitTypes::LIGHT_FRONT_LINE_MAN, team, 2.5f, 100,
-        Unit::MeleeDumb{.state = Unit::MeleeDumb::State::JUST_SPAWNED,
-                        .damage = 10,
-                        .attacking = std::nullopt,
-                        .attack_cooldown = 60,
-                        .attack_cooldown_remaining = 0});
+    ucs.registry.template emplace<Unit>(
+        entity, Unit{.type = UnitTypes::LIGHT_FRONT_LINE_MAN,
+                     .team = team,
+                     .speed = 2.5f,
+                     .health = 100,
+                     .specific = Unit::MeleeDumb{
+                         .state = Unit::MeleeDumb::State::JUST_SPAWNED,
+                         .damage = 10,
+                         .attacking = std::nullopt,
+                         .attack_cooldown = 60,
+                         .attack_cooldown_remaining = 0}});
 }
 
 template <IsUnitCreationSet UCS>
 void create_ranged_man_unit(UCS& ucs, Teams team, int start_x, int start_y) {
-    entt::registry& registry = ucs.registry;
-
     const auto& entity = create_base_unit(ucs, start_x, start_y);
 
-    auto& obj = registry.emplace<Object>(entity);
+    Object& obj = ucs.registry.template emplace<Object>(
+        entity,
+        Object{.id = ucs.object_allocator.allocate(1),
+               .size = ATTR1_SIZE_16x16,
+               .tile_offset = ucs.tiles_allocator.allocate(
+                   get_tile_count_4bpp(GfxMarchGameUnitsRangedManTilesLen))});
 
-    obj.id = ucs.object_allocator.allocate(1);
-    obj.size = ATTR1_SIZE_16x16;
-
-    obj.tile_offset = ucs.tiles_allocator.allocate(
-        get_tile_count_4bpp(GfxMarchGameUnitsRangedManTilesLen));
     GRIT_CPY(&tile_mem_obj[0][obj.tile_offset],
              GfxMarchGameUnitsRangedManTiles);
 
     fix_sprite(obj, team);
 
-    registry.emplace<Unit>(
-        entity, UnitTypes::RANGED_MAN, team, 2.5f, 100,
-        Unit::RangedDumb{.state = Unit::RangedDumb::State::JUST_SPAWNED});
+    ucs.registry.template emplace<Unit>(
+        entity, Unit{.type = UnitTypes::RANGED_MAN,
+                     .team = team,
+                     .speed = 2.5f,
+                     .health = 100,
+                     .specific = Unit::RangedDumb{
+                         .state = Unit::RangedDumb::State::JUST_SPAWNED}});
 }
 
 }  // namespace mgm::units

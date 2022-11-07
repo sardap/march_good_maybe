@@ -29,64 +29,9 @@ using EntityID = int;
 template <typename T>
 concept IsComponent = true;
 
-template <class T>
-class Mallocator {
-   private:
-    void report(T* p, std::size_t n, bool alloc = true) const {
-        // std::cout << (alloc ? "Alloc: " : "Dealloc: ") << sizeof(T) * n
-        //           << " bytes at " << std::hex << std::showbase
-        //           << reinterpret_cast<void*>(p) << std::dec << '\n';
-    }
-
-    T m_values[100];
-    size_t m_top;
-
-   public:
-    typedef T value_type;
-
-    Mallocator() = default;
-
-    template <class U>
-    constexpr Mallocator(const Mallocator<U>&) noexcept {}
-
-    [[nodiscard]] T* allocate(std::size_t n) {
-        // if (n > std::numeric_limits<std::size_t>::max() / sizeof(T))
-        //     return nullptr;
-
-        // if (auto p = static_cast<T*>(std::malloc(n * sizeof(T)))) {
-        //     report(p, n);
-        //     return p;
-        // }
-        T* result = m_values + m_top;
-        m_top += n;
-        return result;
-        // return m_values;
-    }
-
-    void deallocate(T* p, std::size_t n) noexcept {
-        report(p, n, 0);
-        std::free(p);
-    }
-};
-
-template <class T, class U>
-bool operator==(const Mallocator<T>&, const Mallocator<U>&) {
-    return true;
-}
-
-template <class T, class U>
-bool operator!=(const Mallocator<T>&, const Mallocator<U>&) {
-    return false;
-}
-
-template <IsComponent T, int POOL_SIZE, int ENTITY_COUNT>
+template <IsComponent T, int ENTITY_COUNT, int POOL_SIZE>
 class CompetentPool {
    private:
-    using IndexMap =
-        std::unordered_map<EntityID, int, std::hash<EntityID>,
-                           std::equal_to<EntityID>,
-                           Mallocator<std::pair<const EntityID, int>>>;
-
     std::optional<T> m_pool[POOL_SIZE];
     s8 m_mapping[ENTITY_COUNT];
 
@@ -139,6 +84,9 @@ class CompetentPool {
     }
 };
 
+template <typename T>
+concept IsRegistry = true;
+
 template <int ENTITY_LIMIT, typename... POOLS>
 class Registry {
    private:
@@ -162,8 +110,7 @@ class Registry {
     }
 
     template <IsComponent COMPONENT>
-    std::reference_wrapper<COMPONENT> get_component_for_entity(
-        EntityID entity_id) {
+    COMPONENT& get_component_for_entity(EntityID entity_id) {
         auto& pool = std::get<get_pool_idx<COMPONENT>()>(m_pools);
         return pool.get(entity_id);
     }
@@ -182,12 +129,6 @@ class Registry {
         return 0;
     }
 
-    template <IsComponent COM>
-    void emplace(EntityID entity_id, COM com) {
-        auto* pool = &std::get<get_pool_idx<COM>()>(m_pools);
-        pool->emplace(entity_id, com);
-    }
-
     template <size_t I = 0>
     void destroy(EntityID entity_id) {
         if (I == 0) {
@@ -202,9 +143,20 @@ class Registry {
     }
 
     template <IsComponent... COMPONENTS>
-    decltype(auto) get(EntityID entity_id) {
-        return std::make_tuple(
-            get_component_for_entity<COMPONENTS>(entity_id)...);
+    std::tuple<COMPONENTS&...> get(EntityID entity_id) {
+        return std::tie(get_component_for_entity<COMPONENTS>(entity_id)...);
+    }
+
+    template <IsComponent COMPONENT>
+    decltype(auto) get_single(EntityID entity_id) {
+        return get_component_for_entity<COMPONENT>(entity_id);
+    }
+
+    template <IsComponent COMPONENT>
+    decltype(auto) emplace(EntityID entity_id, COMPONENT com) {
+        auto* pool = &std::get<get_pool_idx<COMPONENT>()>(m_pools);
+        pool->emplace(entity_id, com);
+        return get_component_for_entity<COMPONENT>(entity_id);
     }
 
     std::optional<EntityID> get_next_valid_entity(EntityID entity_id) {
@@ -221,6 +173,20 @@ class Registry {
 
         return std::nullopt;
     }
+
+    std::optional<EntityID> get_first_valid_entry() {
+        EntityID entity_id = 0;
+        while (entity_id < ENTITY_LIMIT - 1) {
+            if (m_entities[entity_id]) {
+                return entity_id;
+            }
+            entity_id++;
+        };
+
+        return std::nullopt;
+    }
+
+    bool entity_valid(EntityID entity) { return m_entities[entity]; }
 
     template <size_t I, IsComponent... COMPONENTS>
     bool entity_has_all_components(EntityID entity_id) {
@@ -245,15 +211,6 @@ class Registry {
         return entity_has_all_components<0, COMPONENTS...>(entity_id);
     }
 
-    template <IsComponent... COMS>
-    std::optional<std::tuple<COMS&...>> try_get(EntityID entity_id) {
-        if (!entity_has_all_components<0, COMS...>(entity_id)) {
-            return std::nullopt;
-        }
-
-        return std::make_tuple(get_component_for_entity<COMS>(entity_id)...);
-    }
-
     template <IsComponent... COMPONENTS>
     class View {
        public:
@@ -268,33 +225,39 @@ class Registry {
                 return;
             }
 
-            std::optional<EntityID> entity_id =
-                m_registry.get_next_valid_entity(*m_current_top);
-            if (!entity_id.has_value()) {
-                m_current_top = std::nullopt;
-                return;
-            }
-
-            bool has_all_coms =
-                m_registry.template entity_has_all_components<COMPONENTS...>(
-                    *entity_id);
-            if (has_all_coms) {
+            for (;;) {
+                std::optional<EntityID> entity_id =
+                    m_registry.get_next_valid_entity(*m_current_top);
+                if (!entity_id.has_value()) {
+                    m_current_top = std::nullopt;
+                    break;
+                }
                 m_current_top = *entity_id;
-                return;
-            }
 
-            find_next_entity();
+                bool has_all_coms =
+                    m_registry
+                        .template entity_has_all_components<COMPONENTS...>(
+                            *entity_id);
+                if (has_all_coms) {
+                    break;
+                }
+            }
         }
 
        public:
-        explicit View(FilledRegistry& registry)
-            : m_registry(registry), m_current_top(0) {}
+        explicit View(FilledRegistry& registry) : m_registry(registry) {
+            m_current_top = registry.get_first_valid_entry();
+        }
         explicit View(FilledRegistry& registry, EntityID current_top)
             : m_registry(registry), m_current_top(current_top) {}
 
-        std::tuple<COMPONENTS...> get() {
-            return m_registry.template get<COMPONENTS...>(*m_current_top);
+        std::tuple<COMPONENTS&...> get() {
+            return std::tie(
+                m_registry.template get_component_for_entity<COMPONENTS>(
+                    *m_current_top)...);
         }
+
+        EntityID get_entity_id() { return *m_current_top; }
 
         // Prefix increment
         View<COMPONENTS...>& operator++() {
@@ -326,70 +289,6 @@ class Registry {
     View<COMPONENTS...> view() {
         return View<COMPONENTS...>(*this);
     }
-};
-
-template <typename T, IsComponent... COMPONENTS>
-class View {
-   private:
-    T& m_registry;
-    std::optional<EntityID> m_current_top;
-
-    void find_next_entity() {
-        if (!m_current_top.has_value()) {
-            return;
-        }
-
-        std::optional<EntityID> entity_id =
-            m_registry.get_next_valid_entity(*m_current_top);
-        if (!entity_id.has_value()) {
-            m_current_top = std::nullopt;
-            return;
-        }
-
-        bool has_all_coms =
-            m_registry.template entity_has_all_components<COMPONENTS...>(
-                *entity_id);
-        if (has_all_coms) {
-            m_current_top = *entity_id;
-            return;
-        }
-
-        find_next_entity();
-    }
-
-   public:
-    explicit View(T& registry) : m_registry(registry), m_current_top(0) {}
-    explicit View(T& registry, EntityID current_top)
-        : m_registry(registry), m_current_top(current_top) {}
-
-    std::tuple<COMPONENTS...> get() {
-        return m_registry.template get<COMPONENTS...>(*m_current_top);
-    }
-
-    // Prefix increment
-    View<T, COMPONENTS...>& operator++() {
-        find_next_entity();
-        return *this;
-    }
-
-    // Postfix increment
-    View<T, COMPONENTS...> operator++(int) {
-        View<T, COMPONENTS...> tmp = *this;
-        ++(*this);
-        return tmp;
-    }
-
-    bool complete() { return m_current_top == std::nullopt; }
-
-    friend bool operator==(const View<T, COMPONENTS...>& a,
-                           const View<T, COMPONENTS...>& b) {
-        return a.m_current_top == b.m_current_top;
-    };
-
-    friend bool operator!=(const View<T, COMPONENTS...>& a,
-                           const View<T, COMPONENTS...>& b) {
-        return a.m_current_top != b.m_current_top;
-    };
 };
 
 }  // namespace mgm::ecs

@@ -2,11 +2,12 @@
 
 #include <tonc_types.h>
 
+#include <array>
 #include <functional>
 #include <optional>
 #include <variant>
 
-#include "entt.hpp"
+#include "ecs/ecs.hpp"
 #include "fixed/fixed.hpp"
 
 namespace mgm {
@@ -42,9 +43,14 @@ enum class CollisionTypes {
     UNIT,
 };
 
+struct CollisionEvent {
+    ecs::EntityID entity;
+    CollisionTypes collision_type;
+};
+
 struct Collision {
     CollisionTypes collision_type;
-    u32 collision_events_key;
+    std::array<std::optional<CollisionEvent>, 5> events;
 };
 
 struct VisibleOnlyInCam {};
@@ -80,7 +86,7 @@ struct Unit {
         enum class State { JUST_SPAWNED, FORWARD, FIGHTING };
         State state;
         int damage;
-        std::optional<entt::entity> attacking;
+        std::optional<ecs::EntityID> attacking;
         int attack_cooldown;
         int attack_cooldown_remaining;
     };

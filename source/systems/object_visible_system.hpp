@@ -1,20 +1,16 @@
 #pragma once
 
 #include "../collision.hpp"
-#include "../entt.hpp"
+#include "../ecs/ecs.hpp"
 
 namespace mgm::systems {
 
-template <IsCollisionEventContainer T>
-bool in_camera(entt::entity cam_id, const Collision& col,
-               const T& collision_events_container) {
-    for (u32 i = 0; i < T::EVENT_COUNT; i++) {
-        auto event = collision_events_container.get_collision_event(
-            col.collision_events_key, i);
+bool in_camera(ecs::EntityID cam_id, const Collision& col) {
+    for (auto event : col.events) {
         if (!event.has_value()) {
             break;
         }
-        if (event->get().entity == cam_id) {
+        if (event->entity == cam_id) {
             return true;
         }
     }
@@ -22,22 +18,25 @@ bool in_camera(entt::entity cam_id, const Collision& col,
     return false;
 }
 
-template <IsCollisionEventContainer T>
-void step_object_visible_system(entt::registry& registry, entt::entity cam_id,
-                                const T& collision_events) {
-    auto view =
-        registry
-            .view<const Collision, const Position, Object, VisibleOnlyInCam>();
+template <ecs::IsRegistry T>
+void step_object_visible_system(T& registry, ecs::EntityID cam_id) {
+    const Position& cam_pos = registry.template get_single<Position>(cam_id);
 
-    auto& cam_pos = registry.get<const Position>(cam_id);
+    for (auto view = registry.template view<Collision, Position, Object,
+                                            VisibleOnlyInCam>();
+         !view.complete(); view++) {
+        auto coms = view.get();
+        const Collision& col = std::get<Collision&>(coms);
+        const Position& pos = std::get<Position&>(coms);
+        Object& obj = std::get<Object&>(coms);
 
-    for (auto entity : view) {
-        auto [col, pos, obj] =
-            view.get<const Collision, const Position, Object>(entity);
+        obj.show = false;
 
-        if (!in_camera(cam_id, col, collision_events)) {
+        if (!in_camera(cam_id, col)) {
             continue;
         }
+
+        obj.show = true;
 
         // Get cam id and transform into screen postion
         obj.x = static_cast<int>(pos.x - cam_pos.x);

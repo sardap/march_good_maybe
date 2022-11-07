@@ -7,6 +7,7 @@
 #include <tonc.h>
 
 #include "../components.hpp"
+#include "../ecs/ecs.hpp"
 #include "../fixed/math.hpp"
 #include "../frame_counter.hpp"
 #include "../systems/systems.hpp"
@@ -28,7 +29,7 @@ static void generate_units_for_team(MarchGameData &data, const Teams team,
     for (int i = 0; i < count; ++i) {
         int x = start_x;
         int y = (i * 20) + 40 + qran_range(2, 5);
-        switch (qran_range(0, 2)) {
+        switch (qran_range(1, 1)) {
             case 0:
                 units::create_front_line_unit(data, team, x, y);
                 break;
@@ -71,17 +72,13 @@ static void load(SceneArgs &args) {
     GRIT_CPY(pal_obj_mem, MarchGameUnitsSharedPal);
     generate_all_units(data);
 
-    data.bg_ground.init(data.registry, data.collision_events_container,
-                        GfxMarchGameBackgroundGroundMap,
+    data.bg_ground.init(data.registry, GfxMarchGameBackgroundGroundMap,
                         GfxMarchGameBackgroundGroundMapLen / 64,
                         MGS_GROUND_BACKGROUND_LAYER_PRIO, MGS_SHARED_CBB,
                         MGS_GROUND_BACKGROUND_SBB);
 }
 
-static void free() {
-    auto &data = std::get<MarchGameData>(g_scene_data);
-    data.registry.clear();
-}
+static void free() {}
 
 static void update() {
     VBlankIntrWait();
@@ -105,13 +102,10 @@ static void update() {
     set_background_x(SKY_BACKGROUND, data.sky_x);
 
     systems::step_vel_system(data.registry);
-    systems::step_collision_system(data.registry,
-                                   data.collision_events_container);
-    systems::step_unit_logic_system(data.registry,
-                                    data.collision_events_container);
+    systems::step_collision_system(data.registry);
+    systems::step_unit_logic_system(data.registry);
     systems::step_object_visible_system(data.registry,
-                                        data.bg_ground.get_camera_id(),
-                                        data.collision_events_container);
+                                        data.bg_ground.get_camera_id());
     systems::step_objects(data.registry);
 }
 
