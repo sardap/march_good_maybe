@@ -49,9 +49,10 @@ class ScrollingBackground {
    public:
     ScrollingBackground() {}
 
-    template <ecs::IsRegistry T>
+    template <ecs::IsRegistry T, typename T_PRIORITY, typename T_CBB,
+              typename T_SBB>
     void init(T& registry, const u16* source_map, u32 source_width_tiles,
-              int priority, int cbb, int sbb) {
+              T_PRIORITY priority, T_CBB cbb, T_SBB sbb) {
         const auto entity = registry.create();
         m_cam_id = entity;
 
@@ -68,7 +69,7 @@ class ScrollingBackground {
         init_background(BACKGROUND, priority, cbb, sbb, BACKGROUND_TYPE);
         set_background_scrolling(BACKGROUND, 0, 0);
         m_source_width_tiles = source_width_tiles;
-        m_sbb = sbb;
+        m_sbb = static_cast<int>(sbb);
         m_source_map = source_map;
 
         m_scrolling_dirty = false;

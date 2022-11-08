@@ -69,13 +69,15 @@ inline vu16* background_to_v_reg(Background n) {
     return &REG_BG0VOFS;
 }
 
-inline void init_background(Background number, int priority, int cbb, int sbb,
-                            BackgroundType type) {
+template <typename T_PRIORITY, typename T_CBB, typename T_SBB>
+void init_background(Background number, T_PRIORITY priority, T_CBB cbb,
+                     T_SBB sbb, BackgroundType type) {
     auto reg = background_to_reg(number);
     int bg_reg = background_type_to_int(type);
 
-    *reg = static_cast<u16>(BG_PRIO(priority) | BG_4BPP | BG_CBB(cbb) |
-                            BG_SBB(sbb) | bg_reg);
+    *reg = static_cast<u16>(BG_PRIO(static_cast<int>(priority)) | BG_4BPP |
+                            BG_CBB(static_cast<int>(cbb)) |
+                            BG_SBB(static_cast<int>(sbb)) | bg_reg);
 }
 
 inline void set_background_x(Background number, int x) {

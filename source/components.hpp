@@ -99,4 +99,8 @@ struct Unit {
     std::variant<MeleeDumb, RangedDumb> specific;
 };
 
+struct Player {
+    int money;
+};
+
 }  // namespace mgm
