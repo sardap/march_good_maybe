@@ -76,6 +76,12 @@ inline LogicType unit_type_to_logic_type(UnitTypes type) {
     return LogicType::MELEE_DUMB;
 }
 
+struct UnitGraphics {
+    const u8* standing;
+    const u8* forward;
+    const u8* fighting;
+};
+
 struct Unit {
     UnitTypes type;
     Teams team;

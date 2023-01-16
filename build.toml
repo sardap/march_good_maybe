@@ -46,7 +46,7 @@ options=[
     "-OMarchGameUnitsShared"   # Shared pallet name
 ]
 files=[
-    "gfx/MarchGame/Units/FrontLineMan.aseprite",
+    "gfx/MarchGame/Units/FrontLineManSheet.aseprite",
     "gfx/MarchGame/Units/RangedMan.aseprite",
     "gfx/MarchGame/Units/LightFrontLineMan.aseprite",
 ]
